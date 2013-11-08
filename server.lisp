@@ -33,29 +33,45 @@
 ;; Gets url for a given name
 (setf (route *app* "/:name" :method :GET)
       #'(lambda (params)
-	  (format nil "~a~%~a~%"
-		  (format nil "/~a/points" (getf params :name))
-		  (format nil "/~a/jellybeans" (getf params :name)))))
+	  (with-connection (connect-info *credentials*)
+	    (let ((upcase-name (string-upcase (getf params :name))))
+	      (if (get-dao 'user upcase-name)
+		  (format nil "~a~%~a~%"
+			  (format nil "/~a/points" upcase-name)
+			  (format nil "/~a/jellybeans" upcase-name))
+		(progn (setf (clack.response:status *response*) 404)
+		       "Not found"))))))
+
+(defun name-exists (name)
+  (with-connection (connect-info *credentials*)
+		   (let ((upcase-name (string-upcase name)))
+		     (get-dao 'user upcase-name))))
+
+;; Gets points for a given name
+(setf (route *app* "/:name/points" :method :GET)
+      #'(lambda (params)
+	  (let ((name (getf params :name)))
+	    (if (name-exists name)
+		(points (getf params :name))
+	      (progn (setf (clack.response:status *response*) 404)
+		     "0")))))
+
+;; Gets jellybeans for a given name
+(setf (route *app* "/:name/jellybeans" :method :GET)
+      #'(lambda (params)
+	  (let ((name (getf params :name)))
+	    (if (name-exists name)
+		(jellybeans (getf params :name))
+	      (progn (setf (clack.response:status *response*) 404)
+		     "0" )))))
 
 ;; Posts points to a given name
 (setf (route *app* "/:name/points" :method :POST)
       #'(lambda (params)
 	  (points (getf params :name)
 		  (parse-integer (getf params :|number|)))))
-
-;; Gets points for a given name
-(setf (route *app* "/:name/points" :method :GET)
-      #'(lambda (params)
-	  (points (getf params :name))))
-	       
-
 ;; Posts jellybeans to the given name
 (setf (route *app* "/:name/jellybeans" :method :POST)
       #'(lambda (params)
 	  (jellybeans (getf params :name)
 		      (parse-integer (getf params :|number|)))))
-
-;; Gets jellybeans for a given name
-(setf (route *app* "/:name/jellybeans" :method :GET)
-      #'(lambda (params)
-	  (jellybeans (getf params :name))))
