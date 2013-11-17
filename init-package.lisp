@@ -1,4 +1,4 @@
-(defpackage :rest-api
+(defpackage :jellybean-js
   (:use :common-lisp
 	:clack
 	:ningle

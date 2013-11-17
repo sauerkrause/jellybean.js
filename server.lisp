@@ -1,4 +1,4 @@
-(in-package :rest-api)
+(in-package :jellybean-js)
 
 (setf (route *app* "/")
        "GO AWAY")

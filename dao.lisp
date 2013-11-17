@@ -1,4 +1,4 @@
-(in-package :rest-api)
+(in-package :jellybean-js)
 (load "dao-info.lisp")
 (load "dao-credentials.lisp")
 (defclass user ()
